@@ -1,7 +1,7 @@
 ---
 
 - name: Provision for Jenkins server on AWS
-  hosts: master
+  hosts: all
   become: yes
   become_user: root
   remote_user: root
