@@ -29,7 +29,7 @@ resource "aws_security_group" "srv_security_group" {
       description      = "security group inbound rule for SSH"
       from_port   = 22
       to_port     = 22
-      protocol    = "SSH"
+      protocol    = "TCP"
       cidr_blocks = ["0.0.0.0/0"]
       ipv6_cidr_blocks = ["::/0"]
       self = null
@@ -75,7 +75,12 @@ resource "aws_internet_gateway" "gateway"{
 resource "aws_network_interface" "master_ip" {
   subnet_id   = aws_subnet.srv_subnet.id
   private_ips = ["172.31.0.22"]
+  security_groups = [aws_security_group.srv_security_group.id]
 
+  attachment {
+    instance = aws_instance.master.id
+    device_index = 1
+  }
 
   tags = {
     Name = "primary_network_interface_jenkins_master"
@@ -85,6 +90,12 @@ resource "aws_network_interface" "master_ip" {
 resource "aws_network_interface" "slave_ip" {
   subnet_id   = aws_subnet.srv_subnet.id
   private_ips = ["172.31.0.23"]
+  security_groups = [aws_security_group.srv_security_group.id]
+
+  attachment {
+    instance = aws_instance.slave.id
+    device_index = 1
+  }
  
   tags = {
     Name = "primary_network_interface_jenkins_slave"
@@ -92,17 +103,10 @@ resource "aws_network_interface" "slave_ip" {
 }
 
 resource "aws_instance" "master" {
-  count = 1
   ami           = "ami-09e67e426f25ce0d7"
   instance_type = "t2.micro"
   associate_public_ip_address = "true"
-  vpc_security_group_ids = aws_security_group.srv_security_group.id
-
-  network_interface {
-    network_interface_id = aws_network_interface.master_ip.id
-    device_index         = 0
-  }
-  
+  vpc_security_group_ids = [aws_security_group.srv_security_group.id]
   
   tags = {
     Name = "jenkins master "
@@ -110,20 +114,12 @@ resource "aws_instance" "master" {
 }
 
 resource "aws_instance" "slave" {
-  count = 1
   ami           = "ami-09e67e426f25ce0d7"
   instance_type = "t2.micro"
   associate_public_ip_address = "true"
-  vpc_security_group_ids = aws_security_group.srv_security_group.id
-  
-
-  network_interface {
-    network_interface_id = aws_network_interface.slave_ip.id
-    device_index         = 0
-  }
-
+  vpc_security_group_ids = [aws_security_group.srv_security_group.id]
+ 
   tags = {
     Name = "jenkins slave "
   }
 }
-
