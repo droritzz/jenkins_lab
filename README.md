@@ -8,3 +8,7 @@
 - AWS credentials
 - SSH configured
 
+
+### How to use:
+- clone the branch
+- run `ansible-playbook -i myserver.example.com, jenkins.yml`

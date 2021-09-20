@@ -1,0 +1,12 @@
+---
+
+- name: Provision for Jenkins server on AWS
+  hosts: master
+  become: yes
+  become_user: root
+  remote_user: root
+  vars:
+    - update_apt_cache: yes
+
+  roles:
+    - jenkins
