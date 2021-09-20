@@ -107,6 +107,7 @@ resource "aws_instance" "master" {
   instance_type = "t2.micro"
   associate_public_ip_address = "true"
   vpc_security_group_ids = [aws_security_group.srv_security_group.id]
+  subnet_id = aws_subnet.srv_subnet.id
   
   tags = {
     Name = "jenkins master "
@@ -118,6 +119,7 @@ resource "aws_instance" "slave" {
   instance_type = "t2.micro"
   associate_public_ip_address = "true"
   vpc_security_group_ids = [aws_security_group.srv_security_group.id]
+  subnet_id = aws_subnet.srv_subnet.id
  
   tags = {
     Name = "jenkins slave "
