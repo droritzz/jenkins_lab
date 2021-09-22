@@ -72,9 +72,37 @@ resource "aws_internet_gateway" "gateway"{
   vpc_id = aws_vpc.srv_vpc.id
 }
 
+resource "aws_subnet" "srv_public_subnet" {
+    vpc_id = aws_vpc.srv_vpc.id
+
+    cidr_block = "172.31.0.0/24"
+    availability_zone = "us-east-1a"
+
+    tags= {
+        Name = "Public Subnet"
+    }
+}
+
+resource "aws_route_table" "srv_route_table" {
+    vpc_id = aws_vpc.srv_vpc.id
+
+    route {
+        cidr_block = "0.0.0.0/0"
+        gateway_id = aws_internet_gateway.gateway.id 
+    }
+
+    tags = {
+        Name = "Public Subnet"
+    }
+}
+
+resource "aws_route_table_association" "my_route_table_assoc" {
+    subnet_id = aws_subnet.srv_public_subnet.id
+    route_table_id = aws_route_table.srv_route_table.id 
+}
+
 resource "aws_network_interface" "master_ip" {
   subnet_id   = aws_subnet.srv_subnet.id
-  private_ips = ["172.31.0.22"]
   security_groups = [aws_security_group.srv_security_group.id]
 
   attachment {
@@ -89,7 +117,6 @@ resource "aws_network_interface" "master_ip" {
 
 resource "aws_network_interface" "slave_ip" {
   subnet_id   = aws_subnet.srv_subnet.id
-  private_ips = ["172.31.0.23"]
   security_groups = [aws_security_group.srv_security_group.id]
 
   attachment {
@@ -105,6 +132,7 @@ resource "aws_network_interface" "slave_ip" {
 resource "aws_instance" "master" {
   ami           = "ami-09e67e426f25ce0d7"
   instance_type = "t2.micro"
+  key_name = "otomato"
   associate_public_ip_address = "true"
   vpc_security_group_ids = [aws_security_group.srv_security_group.id]
   subnet_id = aws_subnet.srv_subnet.id
@@ -117,6 +145,7 @@ resource "aws_instance" "master" {
 resource "aws_instance" "slave" {
   ami           = "ami-09e67e426f25ce0d7"
   instance_type = "t2.micro"
+  key_name = "otomato"
   associate_public_ip_address = "true"
   vpc_security_group_ids = [aws_security_group.srv_security_group.id]
   subnet_id = aws_subnet.srv_subnet.id
