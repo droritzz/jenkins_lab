@@ -1,10 +1,10 @@
 provider "aws" {
   profile = "default"
-  region  = "us-east-1"
+  region  = var.region
 }
 
 resource "aws_vpc" "srv_vpc" {
-  cidr_block = "172.31.0.0/24"
+  cidr_block = var.cidr_block
   tags = {
     Name = "jenkins_srv"
   }
@@ -12,8 +12,8 @@ resource "aws_vpc" "srv_vpc" {
 
 resource "aws_subnet" "srv_subnet" {
   vpc_id            = aws_vpc.srv_vpc.id
-  cidr_block        = "172.31.0.0/24"
-  availability_zone = "us-east-1a"
+  cidr_block        = var.cidr_block
+  availability_zone = var.subnet_zone
 
   tags = {
     Name = "subnet terraform"
@@ -75,9 +75,8 @@ resource "aws_internet_gateway" "gateway"{
 resource "aws_subnet" "srv_public_subnet" {
     vpc_id = aws_vpc.srv_vpc.id
 
-    cidr_block = "172.31.0.0/24"
-    availability_zone = "us-east-1a"
-
+    cidr_block = var.cidr_block
+    availability_zone = var.subnet_zone
     tags= {
         Name = "Public Subnet"
     }
@@ -130,9 +129,9 @@ resource "aws_network_interface" "slave_ip" {
 }
 
 resource "aws_instance" "master" {
-  ami           = "ami-09e67e426f25ce0d7"
-  instance_type = "t2.micro"
-  key_name = "otomato"
+  ami           = var.ami
+  instance_type = var.machine_type
+  key_name = var.key_name
   associate_public_ip_address = "true"
   vpc_security_group_ids = [aws_security_group.srv_security_group.id]
   subnet_id = aws_subnet.srv_subnet.id
@@ -143,9 +142,9 @@ resource "aws_instance" "master" {
 }
 
 resource "aws_instance" "slave" {
-  ami           = "ami-09e67e426f25ce0d7"
-  instance_type = "t2.micro"
-  key_name = "otomato"
+  ami           = var.ami
+  instance_type = var.machine_type
+  key_name = var.key_name
   associate_public_ip_address = "true"
   vpc_security_group_ids = [aws_security_group.srv_security_group.id]
   subnet_id = aws_subnet.srv_subnet.id
